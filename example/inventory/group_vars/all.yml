@@ -1,0 +1,45 @@
+---
+ansible_connection: local
+ci_cd_namespace: sonarqube
+sonarqube_name: sonarqube
+sonarqube:
+  build:
+    NAME: "{{ sonarqube_name }}"
+    SOURCE_REPOSITORY_URL: "https://github.com/rht-labs/sonar-auth-openshift.git"
+    SOURCE_REPOSITORY_REF: "master"
+    SOURCE_CONTEXT_DIR: example
+    FROM_DOCKER_IMAGE: sonarqube
+    FROM_DOCKER_TAG: "7.7-community"
+    FROM_DOCKER_IMAGE_REGISTRY_URL: "docker.io/sonarqube"
+  postgresql:
+    POSTGRESQL_DATABASE: sonar
+    VOLUME_CAPACITY: 5Gi
+    POSTGRESQL_PASSWORD: sonar
+    POSTGRESQL_USER: sonar
+    DATABASE_SERVICE_NAME: sonardb
+  deploy:
+    POSTGRES_DATABASE_NAME: "sonar"
+
+openshift_cluster_content: 
+- object: build
+  content:
+  - name: sonarqube
+    template: "https://raw.githubusercontent.com/redhat-cop/containers-quickstarts/v1.14/build-docker-generic/.openshift/templates/docker-build-template-override-FROM.yml"
+    params_from_vars: "{{ sonarqube.build }}"
+    namespace: "{{ ci_cd_namespace }}"
+    tags:
+    - sonarqube
+- object: deployment
+  content:
+  - name: sonardb
+    template: "openshift//postgresql-persistent"
+    params_from_vars: "{{ sonarqube.postgresql }}"
+    namespace: "{{ ci_cd_namespace }}"
+    tags:
+    - sonarqube
+  - name: sonarqube
+    template: "{{ playbook_dir }}/templates/sonarqube-deploy.yml"
+    params_from_vars: "{{ sonarqube.deploy }}"
+    namespace: "{{ ci_cd_namespace }}"
+    tags:
+      - sonarqube

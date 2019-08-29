@@ -1,0 +1,10 @@
+.DS_Store
+target/
+example/apply.rety
+example/roles
+.project
+.classpath
+.vscode
+.settings
+.factorypath
+

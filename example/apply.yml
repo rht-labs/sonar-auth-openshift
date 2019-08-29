@@ -1,0 +1,7 @@
+- name: Deploy OpenShift-Applier Inventory
+  hosts: seed-hosts[0]
+  tasks:
+  - include_role:
+      name: roles/openshift-applier/roles/openshift-applier
+    tags:
+    - openshift-applier
