@@ -2,6 +2,7 @@
 target/
 example/apply.rety
 example/roles
+example/sonar-auth-openshift-plugin-*.jar
 .project
 .classpath
 .vscode
