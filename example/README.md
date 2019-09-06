@@ -2,7 +2,7 @@
 
 
 ```
-Instructions use ansible. Windows users use a vm or apply each command manually
+This example uses ansible. Windows users use a vm or apply each command manually
 ```
 
 This section contains an example for how this plugin can be used with Sonarqube

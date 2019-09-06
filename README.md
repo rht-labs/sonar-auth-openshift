@@ -2,13 +2,13 @@
 
 ## Description
 
-This plugin enables user authentication and Single Sign-On via OpenShift. It is heavily based on the code by Julien Lancelot. Tested on version 7 of Sonarqube and OCP 3.11. Intended to run deployed in a pod on OpenShift.
+This plugin enables user authentication and Single Sign-On via OpenShift. It is heavily based on the code by Julien Lancelot. Tested on version 7 of Sonarqube and OCP 3.11. It is intended to run deployed in a pod on OpenShift.
 
 This plugin is designed to work out of the box without configuration. During plugin deployment, it looks up oauth information from OpenShift's well-known information and takes advantage of information already on the running pod. 
 
 During deployment the plugin will:
 
-- Look like well-known oauth information at https://openshift.default.svc
+- Look up well-known oauth information at https://openshift.default.svc
 - Pull the service account client_id, secret and cert from the file system 
 - Pull the OpenShift API location from the env variables of the pod
 - Get the ServiceAccount name from the API
