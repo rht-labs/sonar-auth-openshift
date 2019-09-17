@@ -2,6 +2,7 @@ package com.rhc.sonarqube.auth.openshift;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.ExecutionException;
 import java.io.File;
@@ -39,6 +40,7 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 
 	public static final String KEY = "openshift";
 	private String todoCallback = "";
+	private boolean initializedOpenshift = true;
 
 	private final OpenShiftScribeApi scribeApi;
 	private final OpenShiftConfiguration config;
@@ -50,27 +52,41 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 		this.scribeApi = scribeApi;
 
 		try {
+			if(isEnabled()) {
+				initOpenShift();
+			} else {
+				LOGGER.info("AuthOpenShiftPlugin is disabled");
+			}
+		} catch (Exception ex) {
+			initializedOpenshift = false;
+			LOGGER.severe("AuthOpenShiftPlugin failed to initialize. Disabling...");
+		}
+		
+		LOGGER.fine("OpenShift API " + scribeApi.toString());
+	}
+
+	private void initOpenShift() throws Exception {
+
+		try {
 			setKeystore();
 		} catch (Exception ex) {
-			LOGGER.severe("Problem setting up ssl");
-			throw new IllegalStateException("Problem setting up ssl", ex);
+			LOGGER.log(Level.SEVERE, "Problem setting up ssl", ex);
+			throw ex;
 		}
 
 		try {
 			getServiceAccountName();
 		} catch (Exception ex) {
-			LOGGER.severe("Problem getting service account");
-			throw new IllegalStateException("Problem getting service account", ex);
+			LOGGER.log(Level.SEVERE, "Problem getting service account", ex);
+			throw ex;
 		}
 
 		try {
 			todoCallback = this.callbackBaseUrl();
 		} catch (Exception ex) {
-			LOGGER.severe("Problem getting callback url (base on pod's service");
-			throw new IllegalStateException("Problem getting callback url", ex);
+			LOGGER.log(Level.SEVERE, "Problem getting callback url (based on pod's service)", ex);
+			throw ex;
 		}
-
-		LOGGER.fine("OpenShift API " + scribeApi.toString());
 	}
 
 	@Override
@@ -91,7 +107,7 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 
 	@Override
 	public boolean isEnabled() {
-		return config.isEnabled();
+		return initializedOpenshift && config.isEnabled();
 	}
 
 	@Override
@@ -109,7 +125,7 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 			LOGGER.fine("Redirect:" + url);
 			context.redirectTo(url);
 		} catch (IOException e) {
-			LOGGER.severe(String.format("Unable to read/write client id and/or client secret from service account.%n"));
+			LOGGER.severe("Unable to read/write client id and/or client secret from service account.");
 			throw new IllegalStateException("Unable to complete init", e);
 		}
 	}
@@ -185,7 +201,7 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 		OAuth2AccessToken token = new OAuth2AccessToken(config.getClientSecret());
 
 		OAuthRequest request = new OAuthRequest(Verb.GET, config.getRouteURL(config.getNamespace()));
-		LOGGER.info("URL--->" + request.getUrl());
+		LOGGER.info("Route URL: " + request.getUrl());
 		scribe.signRequest(token, request);
 		Response response;
 		try {

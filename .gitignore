@@ -1,6 +1,6 @@
 .DS_Store
 target/
-example/apply.rety
+example/apply.retry
 example/roles
 example/sonar-auth-openshift-plugin-*.jar
 .project
