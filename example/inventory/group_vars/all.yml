@@ -21,6 +21,24 @@ sonarqube:
     POSTGRES_DATABASE_NAME: "sonar"
 
 openshift_cluster_content: 
+- object: project
+  content:
+  - name: sonar project
+    file: "{{ playbook_dir}}/files/project.yml"
+    tags:
+    - project
+- object: user-groups
+  content:
+  - name: group-admin-members
+    file: "{{ playbook_dir}}/files/sonarqube-admin-group.yml"
+    namespace: "{{ ci_cd_namespace }}"
+    tags:
+    - users_and_groups
+  - name: group-view-members
+    file: "{{ playbook_dir}}/files/sonarqube-user-group.yml"
+    namespace: "{{ ci_cd_namespace }}"
+    tags:
+    - users_and_groups
 - object: build
   content:
   - name: sonarqube

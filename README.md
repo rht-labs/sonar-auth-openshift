@@ -2,7 +2,7 @@
 
 ## Description
 
-This plugin enables user authentication and Single Sign-On via OpenShift. It is heavily based on the code by Julien Lancelot. Tested on version 7 of Sonarqube and OCP 3.11. It is intended to run deployed in a pod on OpenShift.
+This plugin enables user authentication and Single Sign-On via OpenShift. It is based on the code by Julien Lancelot. Tested on version 7 of Sonarqube and OCP 3.11. It is intended to run deployed in a pod on OpenShift.
 
 This plugin is designed to work out of the box without configuration. During plugin deployment, it looks up oauth information from OpenShift's well-known information and takes advantage of information already on the running pod. 
 
@@ -16,7 +16,7 @@ During deployment the plugin will:
 
 ## Installation
 
-This plugin is not currently hosted anywhere. So build and place this plugin on to the volume where Sonarqube reads plugins at startup. Typically, this might be `/opt/sonarqube/data/plugins`.
+This plugin is currently hosted at [rht-labs](https://github.com/rht-labs/sonar-auth-openshift/releases/latest). The latest jar is [here](https://github.com/rht-labs/sonar-auth-openshift/releases/latest/download/sonar-auth-openshift-plugin.jar). You can build it locally and place this plugin on to the volume where Sonarqube reads plugins at startup if modifying it. Typically, this might be `/opt/sonarqube/data/plugins`.
 
 The service account can be used as the oauth client in OpenShift. The service account that runs Sonarqube should have a redirect uri that references the route that Sonarqube is using. You must specify this service account in the DeploymentConfig.
 
@@ -45,13 +45,20 @@ You may also enable it in the Administrative console
  
 ## Configuration
 
-This plugin will map OpenShift roles to Sonarqube roles. These values are set with the property (shown with the default value if property is not set)
+This plugin will map OpenShift groups to Sonarqube roles. These values are set with the property 
 
 ```
-sonar.auth.openshift.sar.groups=admin=sonar-administrators,edit=sonar-users,view=sonar-users
+sonar.auth.openshift.sar.groups=ocp-admin=sonar-administrators,ocp-users=sonar-users
 ```
 
-The default shown will allow admin users of the project the role of sonar-administrators of Sonarqube. Edit and View role users will be added as sonar-users.
+This shows that Sonarqube will allow OpenShift users who are in the group ocp-admin users to be administrators with the role of sonar-administrators. Ordinary users will be added as sonar-users if they are OpenShift users in the group ocp-users. These OpenShift groups do not exist by default.
+
+The default mapping value is: 
+
+```
+sonar.auth.openshift.sar.groups=sonar-administrators=sonar-administrators,sonar-users=sonar-users
+```
+
 
 You may choose the background color of the log in button with the property
 

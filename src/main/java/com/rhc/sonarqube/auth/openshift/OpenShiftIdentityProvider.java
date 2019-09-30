@@ -147,42 +147,27 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 		String code = request.getParameter("code");
 		OAuth2AccessToken accessToken = scribe.getAccessToken(code);
 
-		Set<String> sonarRoles = findSonarRoles(scribe, accessToken);
-
+		OpenShiftUserResponse user = getOpenShiftUser(scribe, accessToken);
+		Set<String> sonarRoles = findSonarRoles(user);
 		LOGGER.fine(String.format("Roles %s", sonarRoles));
+		UserIdentity userIdentity = UserIdentity.builder().setGroups(sonarRoles).setProviderLogin(user.getUserName())
+				.setLogin(String.format("%s@%s", user.getUserName(), KEY)).setName(user.getUserName()).build();
 
-		String user = getOpenShiftUser(scribe, accessToken);
-		UserIdentity userIdentity = UserIdentity.builder().setGroups(sonarRoles).setProviderLogin(user)
-				.setLogin(String.format("%s@%s", user, KEY)).setName(user).build();
+		LOGGER.fine(String.format("Set user: %s", userIdentity.getName()));
 
 		context.authenticate(userIdentity);
 		context.redirectToRequestedPage();
 	}
 
-	private Set<String> findSonarRoles(OAuth20Service scribe, OAuth2AccessToken accessToken)
-			throws IOException, InterruptedException, ExecutionException {
-		Response response = null;
+	private Set<String> findSonarRoles(OpenShiftUserResponse user) {
 
 		HashSet<String> sonarRoles = new HashSet<String>();
-		String namespace = config.getNamespace();
-
-		OAuthRequest request = new OAuthRequest(Verb.POST, config.getSarURI());
-		request.addHeader("Content-Type", "application/json");
-		scribe.signRequest(accessToken, request);
 
 		for (String accessRole : config.getSARGroups().keySet()) {
-			String json = OpenShiftSubjectAccessReviewRequest.createJsonRequest(accessRole, namespace);
-			LOGGER.fine("SAR body " + json);
-			request.setPayload(json);
-
-			response = scribe.execute(request);
-
-			if (response.isSuccessful()) {
-				if (new JsonParser().parse(response.getBody()).getAsJsonObject().get("allowed").getAsBoolean()) {
-					sonarRoles.add(config.getSARGroups().get(accessRole));
-				}
-			} else {
-				LOGGER.warning(String.format("SAR Request failed with response message %s", response.getBody()));
+			if(user.isMemberOf(accessRole)) {
+				LOGGER.fine(String.format("Adding role %s", config.getSARGroups().get(accessRole)));
+				sonarRoles.add(config.getSARGroups().get(accessRole));
+				//LOGGER.fine(String.format("% has access to %s", user.getUserName(), config.getSARGroups().get(accessRole)));
 			}
 		}
 		return sonarRoles;
@@ -236,7 +221,8 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 		OAuth20Service scribe = newScribeBuilder().build(scribeApi);
 		OAuth2AccessToken token = new OAuth2AccessToken(config.getClientSecret());
 		try {
-			String userName = getOpenShiftUser(scribe, token);
+			OpenShiftUserResponse user = getOpenShiftUser(scribe, token);
+			String userName = user.getUserName();
 			if (userName.indexOf(":") >= 0) {
 				config.setServicAccountName(userName.substring(userName.lastIndexOf(":") + 1));
 				LOGGER.info(String.format("Service account name '%s'", config.getServiceAccountName()));
@@ -247,7 +233,7 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 
 	}
 
-	private String getOpenShiftUser(OAuth20Service scribe, OAuth2AccessToken accessToken)
+	private OpenShiftUserResponse getOpenShiftUser(OAuth20Service scribe, OAuth2AccessToken accessToken)
 			throws IOException, ExecutionException, InterruptedException {
 		OAuthRequest request = new OAuthRequest(Verb.GET, config.getUserURI());
 		scribe.signRequest(accessToken, request);
@@ -259,9 +245,8 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 		}
 		String json = response.getBody();
 		LOGGER.fine("User response body ===== " + json);
-		String userName = new JsonParser().parse(json).getAsJsonObject().get("metadata").getAsJsonObject().get("name")
-				.getAsString();
-		return userName;
+		OpenShiftUserResponse user = OpenShiftUserResponse.create(json);
+		return user;
 	}
 
 	private ServiceBuilder newScribeBuilder() throws IOException {

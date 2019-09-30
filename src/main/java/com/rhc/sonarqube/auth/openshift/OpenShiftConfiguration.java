@@ -28,13 +28,11 @@ public class OpenShiftConfiguration {
 
 	private final Configuration config;
 	private static final String DEFAULT_SCOPE = "user:info user:check-access";
-	private static final String DEFAULT_GROUPS = "admin=sonar-administrators,edit=sonar-users,view=sonar-users";
+	private static final String DEFAULT_GROUPS = "sonar-administrators=sonar-administrators,sonar-users=sonar-users";
 	private static final String DEFAULT_SERVICEACCOUNT_DIRECTORY = "/run/secrets/kubernetes.io/serviceaccount";
 	
 	private static final String SERVICEACCOUNT_DIRECTORY_KEY = "kubernetes.service.account.dir";
-    
-    private static final String USER_URI = "oapi/v1/users/~";
-	private static final String SAR_URI = "oapi/v1/subjectaccessreviews";
+	private static final String USER_URI = "apis/user.openshift.io/v1/users/~";
 	private static final String ROUTE_URI = "%sapis/route.openshift.io/v1/namespaces/%s/routes/%s";
 	private static final String CATEGORY = "OpenShift-Auth";
 	private static final String SUBCATEGORY = "Authentication";
@@ -59,10 +57,6 @@ public class OpenShiftConfiguration {
 	public String getCert() {
 		return CA_CRT;
 	}	
-		
-	public String getSarURI() {
-		return getApiURL() + SAR_URI;
-	}
 	
 	public String getUserURI() {
 		return getApiURL() + USER_URI;
