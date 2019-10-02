@@ -58,6 +58,17 @@ The default mapping value is:
 ```
 sonar.auth.openshift.sar.groups=sonar-administrators=sonar-administrators,sonar-users=sonar-users
 ```
+To disable certificate validation (not recommended for production) configure the `ignore.certs` property
+
+```
+ignore.certs=true
+```
+
+The pod that sonarqube runs in should have a valid certificate to access the OpenShift/Kubernetes API. The Oauth server may have a different certificate. That certificate needs to be loaded into the keystore. To do so, place the certificate on the container's file system (via configmap, dockerfile, etc...). Then configure the sonar property to point the location on the file system
+
+```
+oauth.cert=/opt/sonarqube/conf/oauth.crt
+```
 
 
 You may choose the background color of the log in button with the property

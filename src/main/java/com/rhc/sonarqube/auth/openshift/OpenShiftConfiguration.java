@@ -10,7 +10,7 @@ import static org.sonar.api.PropertyType.STRING;
 
 import java.io.BufferedReader;
 import java.io.File;
-
+import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +37,9 @@ public class OpenShiftConfiguration {
 	private static final String CATEGORY = "OpenShift-Auth";
 	private static final String SUBCATEGORY = "Authentication";
 	
+	private static final String OPENSHIFT_GROUP_MAPPING = "sonar.auth.openshift.sar.groups";
+	private static final String OAUTH_CERT = "oauth.cert";
+	private static final String IGNORE_CERTS = "ignore.certs";
 	private static final String WEB_URL = "sonar.auth.openshift.webUrl";
 	private static final String API_URL = "kubernetes.service";
 	private static final String IS_ENABLED = "sonar.auth.openshift.isEnabled";
@@ -58,6 +61,20 @@ public class OpenShiftConfiguration {
 		return CA_CRT;
 	}	
 	
+	public FileInputStream getOAuthCertFile() throws FileNotFoundException {
+		String cert = config.get(OAUTH_CERT).orElse(null);
+
+		if(cert == null) {
+			return null;
+		}
+
+		return new FileInputStream(new File(cert));
+	}
+
+	public boolean ignoreCerts() {
+		return config.getBoolean(IGNORE_CERTS).orElse(false);
+	}
+
 	public String getUserURI() {
 		return getApiURL() + USER_URI;
 	}
@@ -91,7 +108,7 @@ public class OpenShiftConfiguration {
 	}
 
 	public Map<String, String> getSARGroups() {
-		String mapAsString = config.get("sonar.auth.openshift.sar.groups").orElse(DEFAULT_GROUPS);
+		String mapAsString = config.get(OPENSHIFT_GROUP_MAPPING).orElse(DEFAULT_GROUPS);
 		return Splitter.on(",").withKeyValueSeparator("=").split(mapAsString);
 	}
 	

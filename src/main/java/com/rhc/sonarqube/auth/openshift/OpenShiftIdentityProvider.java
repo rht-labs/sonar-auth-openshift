@@ -14,12 +14,14 @@ import java.security.SecureRandom;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.httpclient.okhttp.OkHttpHttpClient;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.builder.ServiceBuilder;
 
@@ -28,6 +30,7 @@ import org.sonar.api.server.authentication.Display;
 import org.sonar.api.server.authentication.UserIdentity;
 
 import io.kubernetes.client.util.Config;
+import okhttp3.OkHttpClient;
 
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 
@@ -44,6 +47,7 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 
 	private final OpenShiftScribeApi scribeApi;
 	private final OpenShiftConfiguration config;
+	private OkHttpClient okClient;
 
 	static final Logger LOGGER = Logger.getLogger(OpenShiftIdentityProvider.class.getName());
 
@@ -68,7 +72,7 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 	private void initOpenShift() throws Exception {
 
 		try {
-			setKeystore();
+			setHttpClient();
 		} catch (Exception ex) {
 			LOGGER.log(Level.SEVERE, "Problem setting up ssl", ex);
 			throw ex;
@@ -235,6 +239,7 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 
 	private OpenShiftUserResponse getOpenShiftUser(OAuth20Service scribe, OAuth2AccessToken accessToken)
 			throws IOException, ExecutionException, InterruptedException {
+
 		OAuthRequest request = new OAuthRequest(Verb.GET, config.getUserURI());
 		scribe.signRequest(accessToken, request);
 		Response response = scribe.execute(request);
@@ -254,25 +259,43 @@ public class OpenShiftIdentityProvider implements OAuth2IdentityProvider {
 			throw new IllegalStateException("OpenShift authentication is disabled.");
 		}
 
-		return new ServiceBuilder(config.getClientId()).apiSecret(config.getClientSecret()).callback(todoCallback);
+		OkHttpHttpClient httpClient = new OkHttpHttpClient(okClient);
+		return new ServiceBuilder(config.getClientId()).apiSecret(config.getClientSecret()).httpClient(httpClient).httpClient(httpClient).callback(todoCallback);
 	}
 
-	private void setKeystore() throws IOException, GeneralSecurityException {
-		KeyStore keyStore = SecurityUtils.getDefaultKeyStore();
-		try {
-			LOGGER.fine("Keystore size " + keyStore.size());
-		} catch (Exception ex) {
-			keyStore.load(null);
-		}
+	private void setHttpClient() throws IOException, GeneralSecurityException {
 
-		FileInputStream fis = new FileInputStream(new File(config.getOpenShiftServiceAccountDirectory(), "ca.crt"));
-		SecurityUtils.loadKeyStoreFromCertificates(keyStore, SecurityUtils.getX509CertificateFactory(), fis);
-		LOGGER.fine("Keystore loaded");
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
-		tmf.init(keyStore);
-		SSLContext ssl = SSLContext.getInstance("TLS");
-		ssl.init(Config.defaultClient().getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
-		SSLContext.setDefault(ssl);
-		LOGGER.fine("SSL context set");
+		if(config.ignoreCerts()) {
+			okClient = TrustAllHttpClient.instance();
+			LOGGER.warning("Ignoring all certs. Not meant for production use");
+		} else {
+
+			KeyStore keyStore = SecurityUtils.getDefaultKeyStore();
+			try {
+				LOGGER.fine("Keystore size " + keyStore.size());
+			} catch (Exception ex) {
+				keyStore.load(null);
+			}
+
+			FileInputStream fis = new FileInputStream(new File(config.getOpenShiftServiceAccountDirectory(), config.getCert()));
+			SecurityUtils.loadKeyStoreFromCertificates(keyStore, SecurityUtils.getX509CertificateFactory(), fis);
+
+			fis = config.getOAuthCertFile();
+
+			if(fis != null) {
+				LOGGER.info("Loading OAuth certificate");
+				SecurityUtils.loadKeyStoreFromCertificates(keyStore, SecurityUtils.getX509CertificateFactory(), fis);
+			}
+
+			LOGGER.fine("Keystore loaded");
+			TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
+			tmf.init(keyStore);
+			SSLContext ssl = SSLContext.getInstance("TLS");
+			ssl.init(Config.defaultClient().getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+			SSLContext.setDefault(ssl);
+			LOGGER.fine("SSL context set");
+
+			okClient = new OkHttpClient.Builder().sslSocketFactory(ssl.getSocketFactory(), (X509TrustManager)tmf.getTrustManagers()[0]).build();
+		}
 	}
 }

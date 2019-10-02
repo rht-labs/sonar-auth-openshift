@@ -45,6 +45,7 @@ public class OpenShiftScribeApi extends DefaultApi20 {
 
 		com.squareup.okhttp.Response okresponse = ok.newCall(okrequest).execute();
 		String json = okresponse.body().string();
+		LOGGER.fine(String.format("Well known response: %s", json));
 
 		JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
 		issuer = jsonObject.get("issuer").getAsString();
