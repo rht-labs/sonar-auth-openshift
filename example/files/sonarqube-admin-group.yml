@@ -1,0 +1,9 @@
+---
+apiVersion: user.openshift.io/v1
+kind: Group
+metadata:
+  name: sonarqube_admin
+users:
+- developer
+- admin1
+- admin2

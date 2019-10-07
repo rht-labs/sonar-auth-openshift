@@ -46,8 +46,8 @@ public class MockHttpClient implements HttpClient{
 	@Override
 	public Response execute(String userAgent, Map<String, String> headers, Verb httpVerb, String completeUrl,
 			byte[] bodyContents) throws InterruptedException, ExecutionException, IOException {
-		
-		if(completeUrl.contentEquals("http://127.0.0.1/oapi/v1/users/~")) {
+
+		if(completeUrl.contentEquals("http://127.0.0.1/apis/user.openshift.io/v1/users/~")) {
 			return new Response(200, "message", new HashMap<String, String>(), 
 					new FileInputStream("src/test/resources/service_account_user.json"));
 		} else if(completeUrl.contentEquals("http://127.0.0.1/apis/route.openshift.io/v1/namespaces/sqube/routes/sonarqube")) {

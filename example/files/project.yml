@@ -1,0 +1,9 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: sonarqube
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active

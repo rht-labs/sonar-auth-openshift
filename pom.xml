@@ -7,7 +7,7 @@
 	<groupId>org.sonarsource.auth.openshift</groupId>
 	<artifactId>sonar-auth-openshift-plugin</artifactId>
 	<packaging>sonar-plugin</packaging>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 
 	<name>OpenShift Authentication for SonarQube</name>
 	<description><![CDATA[
