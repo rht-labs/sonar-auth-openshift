@@ -5,11 +5,11 @@ sonarqube_name: sonarqube
 sonarqube:
   build:
     NAME: "{{ sonarqube_name }}"
-    SOURCE_REPOSITORY_URL: "https://github.com/rht-labs/sonar-auth-openshift.git"
-    SOURCE_REPOSITORY_REF: "master"
+    SOURCE_REPOSITORY_URL: "https://github.com/mcanoy/sonar-auth-openshift.git"
+    SOURCE_REPOSITORY_REF: "sonar7.9.1"
     SOURCE_CONTEXT_DIR: example
     FROM_DOCKER_IMAGE: sonarqube
-    FROM_DOCKER_TAG: "7.7-community"
+    FROM_DOCKER_TAG: "7.9.1-community"
     FROM_DOCKER_IMAGE_REGISTRY_URL: "docker.io/sonarqube"
   postgresql:
     POSTGRESQL_DATABASE: sonar
