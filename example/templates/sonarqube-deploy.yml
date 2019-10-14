@@ -7,7 +7,7 @@ objects:
   kind: ServiceAccount
   metadata:
     annotations:
-      serviceaccounts.openshift.io/oauth-redirectreference.sonarqube: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"sonarqube"}}'
+      serviceaccounts.openshift.io/oauth-redirectreference.sonarqube: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"${ROUTE_NAME}"}}'
     name: sonarqube
 - apiVersion: v1
   kind: RoleBinding
@@ -145,7 +145,7 @@ objects:
   metadata:
     labels:
       app: sonarqube
-    name: sonarqube
+    name: "${ROUTE_NAME}"
   spec:
     port:
       targetPort: 9000-tcp
@@ -183,10 +183,10 @@ parameters:
     displayName: SonarQube Storage Space Size
     required: true
     value: 5Gi
-  - name: SONAR_AUTH_REALM
-    value: ''
-    description: The type of authentication that SonarQube should be using (None or LDAP) (Ref - https://docs.sonarqube.org/display/PLUG/LDAP+Plugin)
-    displayName: SonarQube Authentication Realm
+  - name: ROUTE_NAME
+    value: sonarqube
+    description: The name of the route for sonarqube
+    displayName: SonarQube Route Name
   - name: SONAR_AUTOCREATE_USERS
     value: 'false'
     description: When using an external authentication system, should SonarQube automatically create accounts for users?

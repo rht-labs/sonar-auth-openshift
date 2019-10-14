@@ -85,6 +85,18 @@ kubernetes.service=https://${env:KUBERNETES_SERVICE_HOST}:${env:KUBERNETES_SERVI
 
 See the example set up using the [OpenShift Applier](https://github.com/redhat-cop/openshift-applier) [here](example/README.md)
 
+### Configuration Table
+
+| Config        | Purpose           |
+| ------------- |-------------|
+| sonar.auth.openshift.sar.groups      | A map converting OpenShift groups to Sonarqube roles |
+| sonar.auth.openshift.route.name      | The name of the route. Must also be defined in the service account (See example template)     |
+| oauth.cert | File system location of the certificate      |
+| ignore.certs | Option to ignore certificates. Not recommended for production      |
+| kubernetes.service | The url of the api server with port if necessary   |
+| sonar.auth.openshift.isEnabled | Ability to control whether to user this plugin   |
+| sonar.auth.openshift.button.color | The hex color of the login button (#666666)   |
+
 ### License
 
 Licensed under the [Apache License](http://www.apache.org/licenses/LICENSE-2.0.txt)
