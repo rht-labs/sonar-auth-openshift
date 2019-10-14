@@ -6,7 +6,7 @@ sonarqube:
   build:
     NAME: "{{ sonarqube_name }}"
     SOURCE_REPOSITORY_URL: "https://github.com/rht-labs/sonar-auth-openshift.git"
-    SOURCE_REPOSITORY_REF: "master""
+    SOURCE_REPOSITORY_REF: "master"
     SOURCE_CONTEXT_DIR: example
     FROM_DOCKER_IMAGE: sonarqube
     FROM_DOCKER_TAG: "7.9.1-community"
