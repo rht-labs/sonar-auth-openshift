@@ -38,6 +38,7 @@ public class OpenShiftConfiguration {
 	private static final String SUBCATEGORY = "Authentication";
 	
 	private static final String OPENSHIFT_GROUP_MAPPING = "sonar.auth.openshift.sar.groups";
+	private static final String ROUTE_NAME = "sonar.auth.openshift.route.name";
 	private static final String OAUTH_CERT = "oauth.cert";
 	private static final String IGNORE_CERTS = "ignore.certs";
 	private static final String WEB_URL = "sonar.auth.openshift.webUrl";
@@ -130,7 +131,7 @@ public class OpenShiftConfiguration {
 	}
 
 	public String getRouteURL(String namespace) {
-		return String.format(ROUTE_URI, getApiURL(), namespace, "sonarqube");
+		return String.format(ROUTE_URI, getApiURL(), namespace, config.get(ROUTE_NAME).orElse("sonarqube"));
 	}
 	
 	public static List<PropertyDefinition> definitions() {

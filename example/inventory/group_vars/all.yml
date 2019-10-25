@@ -9,7 +9,7 @@ sonarqube:
     SOURCE_REPOSITORY_REF: "master"
     SOURCE_CONTEXT_DIR: example
     FROM_DOCKER_IMAGE: sonarqube
-    FROM_DOCKER_TAG: "7.7-community"
+    FROM_DOCKER_TAG: "7.9.1-community"
     FROM_DOCKER_IMAGE_REGISTRY_URL: "docker.io/sonarqube"
   postgresql:
     POSTGRESQL_DATABASE: sonar
