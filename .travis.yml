@@ -1,28 +1,19 @@
 language: java
 if: tag IS present OR NOT (branch == master)
-# It would be nice to use Travis' caching capabilities, but I have been unable to make it work successfully
-# before_cache:
-#   - export MAVEN_LOCAL_REPOSITORY=$(mvn -B help:evaluate -Dexpression=settings.localRepository -q -DforceStdout)
-# cache:
-#   directories:
-#     - $MAVEN_LOCAL_REPOSITORY
-install: mvn -q dependency:resolve
 jdk:
   - openjdk8
-before_script:
-  - |
-    if [ "$TRAVIS_BRANCH" = "master" ] || [ "${TRAVIS_TAG}X" != "X" ]; then
-      git fetch --unshallow
-      mvn -q versions:set@remove-snapshot versions:commit@remove-snapshot -B;
-    fi
+cache:
+  directories:
+  - "$HOME/.m2"
 script:
   - |
-    mvn clean package -B
-    if [ "$TRAVIS_BRANCH" = "master" ] || [ "${TRAVIS_TAG}X" != "X" ]; then
+    mvn clean package -q -B
+
+    # if [ "$TRAVIS_BRANCH" = "master" ] || [ "${TRAVIS_TAG}X" != "X" ]; then
       ## Only run these commands when building a release
-      mvn sonar:sonar -Dsonar.login=${SONAR_PROJECT_TOKEN} -B
+      # mvn sonar:sonar -Dsonar.login=${SONAR_PROJECT_TOKEN} -B
       # mvn -q dependency-check:check -B
-    fi
+    # fi
 before_deploy:
   - export PLUGIN_JAR=$(ls target/sonar-auth-openshift-plugin*jar)
   - echo "deploying $PLUGIN_JAR to GitHub releases"
@@ -32,8 +23,8 @@ deploy:
   file_glob: true
   file:
     - "${PLUGIN_JAR}"
-#    - "target/site/jacoco/*"
-#    - "target/dependency-check-report.html"
+    #    - "target/site/jacoco/*"
+    #    - "target/dependency-check-report.html"
   skip_cleanup: true
   on:
     tags: true
