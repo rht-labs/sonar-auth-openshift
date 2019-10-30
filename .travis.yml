@@ -7,7 +7,7 @@ cache:
   - "$HOME/.m2"
 script:
   - |
-    mvn clean package -q -B
+    mvn clean package -B
 
     # if [ "$TRAVIS_BRANCH" = "master" ] || [ "${TRAVIS_TAG}X" != "X" ]; then
       ## Only run these commands when building a release
