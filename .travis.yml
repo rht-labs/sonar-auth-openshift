@@ -1,0 +1,32 @@
+language: java
+if: tag IS present OR NOT (branch == master)
+jdk:
+  - openjdk8
+cache:
+  directories:
+  - "$HOME/.m2"
+script:
+  - |
+    mvn clean compile -B -q
+    mvn test -B
+    mvn package -B -q
+
+    # if [ "$TRAVIS_BRANCH" = "master" ] || [ "${TRAVIS_TAG}X" != "X" ]; then
+      ## Only run these commands when building a release
+      # mvn sonar:sonar -Dsonar.login=${SONAR_PROJECT_TOKEN} -B
+      # mvn -q dependency-check:check -B
+    # fi
+before_deploy:
+  - export PLUGIN_JAR=$(ls target/sonar-auth-openshift-plugin*jar)
+  - echo "deploying $PLUGIN_JAR to GitHub releases"
+deploy:
+  provider: releases
+  api_key: "${GITHUB_OAUTH_TOKEN}"
+  file_glob: true
+  file:
+    - "${PLUGIN_JAR}"
+    #    - "target/site/jacoco/*"
+    #    - "target/dependency-check-report.html"
+  skip_cleanup: true
+  on:
+    tags: true

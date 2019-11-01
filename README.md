@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rht-labs/sonar-auth-openshift.svg?branch=master)](https://travis-ci.org/rht-labs/sonar-auth-openshift)
+
 # Openshift Authentication Plugin for SonarQube 
 
 ## Description
