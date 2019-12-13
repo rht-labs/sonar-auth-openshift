@@ -1,0 +1,6 @@
+cp $PLUGIN_JAR images/
+cd images
+QUAY_OWNER=$(echo $TRAVIS_REPO_SLUG | cut -d/ -f1)
+docker build -t quay.io/$QUAY_OWNER/labs-sonarqube:$TRAVIS_BRANCH -t quay.io/$QUAY_OWNER/labs-sonarqube:latest .
+echo "$QUAY_BOT_PASSWORD" | docker login -u "$QUAY_BOT_USERNAME" --password-stdin quay.io
+docker push quay.io/$QUAY_OWNER/labs-sonarqube

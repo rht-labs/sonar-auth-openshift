@@ -20,13 +20,18 @@ before_deploy:
   - export PLUGIN_JAR=$(ls target/sonar-auth-openshift-plugin*jar)
   - echo "deploying $PLUGIN_JAR to GitHub releases"
 deploy:
-  provider: releases
-  api_key: "${GITHUB_OAUTH_TOKEN}"
-  file_glob: true
-  file:
-    - "${PLUGIN_JAR}"
-    #    - "target/site/jacoco/*"
-    #    - "target/dependency-check-report.html"
-  skip_cleanup: true
-  on:
-    tags: true
+  - provider: releases
+    api_key: "${GITHUB_OAUTH_TOKEN}"
+    file_glob: true
+    file:
+      - "${PLUGIN_JAR}"
+      #    - "target/site/jacoco/*"
+      #    - "target/dependency-check-report.html"
+    skip_cleanup: true
+    on:
+      tags: true
+  - provider: script
+    skip_cleanup: true
+    script: bash quay_io
+    on:
+      tags: true
