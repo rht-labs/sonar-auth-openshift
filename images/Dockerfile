@@ -10,7 +10,7 @@ RUN cp -a /opt/sonarqube/data /opt/sonarqube/data-init && \
 	chown root:root /opt/sonarqube && chmod -R gu+rwX /opt/sonarqube
 ADD plugins.sh /opt/sonarqube/bin/plugins.sh
 RUN /opt/sonarqube/bin/plugins.sh $sonar_plugins
-ADD https://github.com/rht-labs/sonar-auth-openshift/releases/latest/download/sonar-auth-openshift-plugin.jar  /opt/sonarqube/extensions-init/plugins/
+ADD sonar-auth-openshift-plugin.jar  /opt/sonarqube/extensions-init/plugins/
 RUN chown root:root /opt/sonarqube -R; \
     chmod 6775 /opt/sonarqube -R
 USER 1001
