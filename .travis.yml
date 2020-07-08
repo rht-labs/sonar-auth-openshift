@@ -6,11 +6,15 @@ cache:
   directories:
   - "$HOME/.m2"
 script:
-  - |
+  - | 
+    export ARTIFACT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+    if [ "${TRAVIS_TAG}X" != "X" ] && [ "$ARTIFACT_VERSION" != "$TRAVIS_TAG" ]; then
+      echo "Version mismatch: Tag $TRAVIS_TAG does not match $ARTIFACT_VERSION project.version in pom.xml"
+      exit 1
+    fi
     mvn clean compile -B -q
     mvn test -B
     mvn package -B -q
-
     # if [ "$TRAVIS_BRANCH" = "master" ] || [ "${TRAVIS_TAG}X" != "X" ]; then
       ## Only run these commands when building a release
       # mvn sonar:sonar -Dsonar.login=${SONAR_PROJECT_TOKEN} -B
